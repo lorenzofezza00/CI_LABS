@@ -21,8 +21,6 @@ The goal of the game is to **avoid** taking the last object.
 * Working in group is not only allowed, but recommended (see: [Ubuntu](https://en.wikipedia.org/wiki/Ubuntu_philosophy) and [Cooperative Learning](https://files.eric.ed.gov/fulltext/EJ1096789.pdf)). Collaborations must be explicitly declared in the `README.md`.
 * [Yanking](https://www.emacswiki.org/emacs/KillingAndYanking) from the internet is allowed, but sources must be explicitly declared in the `README.md`.
 
-## Deadline : 23:59, November 17, 2020
-
 ## Overview
 
 This README provides a formal description of the implementation process for an algorithm designed to achieve optimal performance in the nim game. The algorithm involves a training phase using an evolutionary strategy for parameter optimization and a test phase to evaluate the performance of the algorithm.
@@ -47,13 +45,26 @@ which takes two parameters as input: the `state` (nim table) and the `weights`. 
   1. take all the items from the row with more items
   2. take one item from the row with less items
   3. take a random choice
-
 * The third method implemented is the `ES()` function. 
-The evolutionary strategy follows this three steps:
+The evolutionary strategy (mu + lambda) follows this three steps:
   1. Initialization: the function initializes `mu` individuals in the population, giving the same probability for each rule, so, each element of `weights` is the same. The `fitness` is calculated using this `weights`. Than (`weights`, `fitness`, `sigma`) are put in the population as new individual.
   2. Child generation or mutation: in this second step the population is mutated using the `mutation()` function that takes as input the initial population and generates `lamb` childs. The new individuals are concatenated to the initial population and put in the `offspring` variable (new population composed by `mu + lamb` individuals) and the individual with the best fitness value is selected and compared to the best solution. If the new individual is better than the best one, it is replaced.
   3. New population selection: the best `mu` individuals are selected and put in the new population as survivors.
 * The last method implemented is the `mutation()` function. At the beginning empty, it was implemented to generate new individuals starting from the initial population. The function takes as input the initial population and generates `lamb/mu` childs for each parent. Since the starting population is composed of `mu` parents, the new individuals generated will be in total `lamb`. The mutation is done introducing a random noise in the weights, such that,randomly varying the weights, it is possible to find such that combination of weights that maximizes the `fitness` value. The `sigma` variable is used to vary the amount of mutation applied to the weights during the evolution of the population.
 
-## Test phase: Results
-After the Trainig phase is complete, the optimal weights are used to play the `optimal` strategy against the `my_strategy`. Playing different times the game, the percentage of victories is around 30%.
+The following image shows how the best fitness value changes during the evolution of the population:
+![Fig 1.](./output.png "Fig 1.")
+The evolutionary strategy generates promising results playing against the optimal strategy. But this results are good againist gabriele, but not so good againist optimal and pure_random in the test phase.
+
+## Test phase: <br> Results
+After the Trainig phase is complete, the precomputed optimal weights are used to play the `adaptive` strategy against `optimal`, `pure_random` and `gabriele` strategies.
+
+The results are shown in the following table:
+
+| strategy     | %w |
+|--------------|----|
+|  optimal     | 34 |
+|  pure_random | 61 |
+|  gabriele    | 89 |
+
+## Deadline : 23:59, November 17, 2020
