@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "lab09"
+version = "0.1.0"
+description = ""
+authors = ["LORENZO FEZZA s312689 <s312689@studenti.polito.it>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+ipykernel = "^6.27.1"
+tqdm = "^4.66.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
