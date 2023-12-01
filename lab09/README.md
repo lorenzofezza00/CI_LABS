@@ -40,6 +40,11 @@ Than the best individual fitness value, with the count of fitness and the iterat
 
 * `compute_diversity()`: in order to evaluate the diversity a xor operation is performed between two individuals. The result of the xor is than used to calculate the pencentage of different bits with respect to the total number of bits (`l` = 1000). It is a genotype diversity.
 
+  *Consideration:*<br> 
+  During the `select_with_replacement()` implementation, the diversity matrix was printed in order to understand if the diversity was correctly computed and if the fitness value could influence the selection. Using the colorama library it was possible to hilight the maximum diversity value of the matrix and the value selected weighting with the fitness value. From this test it was possible to understand that usually the most different individuals are also the ones with the highest fitness value.<br>
+  Later on, the diversity matrix of the population that generated the children that gave rise to the best (that matrix which is not weighted with the fitness value) was plotted in order to understand how the diversiry is distributed during the evolution of the algorithm. Those graphs are very cute.
+
+
 * `mutation()`: this method takes as input an individual and a probability of mutation (set by default to `O.5`) and computes a bit-flip mutation, returning . The mutation is performed on each bit of the bitstring with the given probability in a for loop. If the random number generated is less than the probability, the bit is flipped.
 
   Two methods of crossover are implemented and their performance is evaluated in order to understand which one is better:
