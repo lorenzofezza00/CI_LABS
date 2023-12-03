@@ -41,8 +41,11 @@ Than the best individual fitness value, with the count of fitness and the iterat
 * `compute_diversity()`: in order to evaluate the diversity a xor operation is performed between two individuals. The result of the xor is than used to calculate the pencentage of different bits with respect to the total number of bits (`l` = 1000). It is a genotype diversity.
 
   *Consideration:*<br> 
-  During the `select_with_replacement()` implementation, the diversity matrix was printed in order to understand if the diversity was correctly computed and if the fitness value could influence the selection. Using the colorama library it was possible to hilight the maximum diversity value of the matrix and the value selected weighting with the fitness value. From this test it was possible to understand that usually the most different individuals are also the ones with the highest fitness value.<br>
-  Later on, the diversity matrix of the population that generated the children that gave rise to the best (that matrix which is not weighted with the fitness value) was plotted in order to understand how the diversiry is distributed during the evolution of the algorithm. Those graphs are very cute.
+  During the `select_with_replacement()` implementation, the diversity matrix was printed in order to understand if the diversity was correctly computed and if the fitness value could influence the selection. Using the colorama library it was possible to hilight the maximum diversity value of the matrix and the value selected weighting with the fitness value. From this test it was possible to understand that usually the selected values are also the most different ones.<br>
+  Later on, the diversity matrix of the population that generated the children that gave rise to the best (that matrix which is not weighted with the fitness value) was plotted in order to understand how the diversiry is distributed during the evolution of the algorithm. Those graphs are very nice.
+
+* `diversity_selection()`: is used to select the most different individuals, weighting the difference with the fitness value. Also in this case the `diff_matrix` is modified in order to evaluate the diversity convergence over the generations.
+A `study_diversity_selection()` method was used at the beginning to study the evolution.
 
 
 * `mutation()`: this method takes as input an individual and a probability of mutation (set by default to `O.5`) and computes a bit-flip mutation, returning . The mutation is performed on each bit of the bitstring with the given probability in a for loop. If the random number generated is less than the probability, the bit is flipped.
@@ -56,10 +59,46 @@ Than the best individual fitness value, with the count of fitness and the iterat
   The cyclic shift crossover appears to work better than the standard crossover by increasing the fitness percentage by a few units.
 
 
-## Results
-The results are evaluated using the percentage of fitness reached. Unfortunately, the professor implementation, which generates 10 random bitstrings, calling only 10 times the fitness function, generates solutions slightly lower than the solutions obtained using the genetic algorithm which calls the fitness many more times.
+### Island Model :
+After the implementation of the genetic algorithms with variants of parent selection and crossover, a non-parallelized island model is implemented, in order to observe how different populations can evolve, passing promising individuals among themselves. In the implemented model, an individual is promising if it has a high fitness value. Since this promising value is passed from one population to another it is likely that it is also different from other individuals in another population. Clearly, if the population is not very large, convergence to very similar individuals is rapid.<br>
+In particoular this model iterates `iteration` times and, for each iteration, each island computes a cycle of `evolve()` method, in which two parents are selected thanks to the selection methods implemented above, than crossover and mutation are computed and the new population is evaluated in order to select the best individual to passo to another population.
 
-HERE I CAN PUT A TABLE WITH MY RESULTS vs PROFESSOR RESULTS
+## Results
+The results are evaluated using the percentage of fitness reached. Unfortunately, the professor implementation, which generates 10 random bitstrings, calling only 10 times the fitness function, generates solutions slightly lower than the solutions obtained using the genetic algorithm which calls the fitness many more times.<br>
+* **Statistics**:
+
+  - **Professor results (random search):**
+    | Problem | Fitness | Fit calls |
+    |:-------:|:-------:|:---------:|
+    |    1    |  53.90% |     10    |
+    |    2    |  48.60% |     10    |
+    |    5    |  19.50% |     10    |
+    |   10    |   5.29% |     10    |
+
+  - **Standard crossover (two pt) using selection with replacement:**
+    | Problem | Fitness | Fit calls |
+    |:-------:|:-------:|:--------:|
+    |    1    |  54.00% |   2020   |
+    |    2    |  52.40% |   2020   |
+    |    5    |  20.62% |   2020   |
+    |   10    |  16.20% |   2020   |
+
+  - **Cyclic shift crossover using selection based on diversity:**
+    | Problem | Fitness | Fit calls |
+    |:-------:|:-------:|:--------:|
+    |    1    |  54.40% |   2020   |
+    |    2    |  52.60% |   2020   |
+    |    5    |  22.34% |   2020   |
+    |   10    |  17.11% |   2020   |
+
+  - **Island model (using Cyclic shift crossover using selection based on diversity because of the best performances):**
+    | Problem | Fitness | Fit calls |
+    |:-------:|:-------:|:--------:|
+    |    1    |  54.40% |   8000   |
+    |    2    |  52.00% |   8000   |
+    |    5    |  31.24% |   8000   |
+    |   10    |  25.43% |   8000   |
+
 
 ### Deadlines:
 
