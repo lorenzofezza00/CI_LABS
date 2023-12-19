@@ -82,7 +82,3 @@ The agent seems to have learnt how to block the most of the opponent moves, but 
 * Submission: [Dies Natalis Solis Invicti](https://en.wikipedia.org/wiki/Sol_Invictus)
 * Reviews: [Befana](https://en.wikipedia.org/wiki/Befana)
 
-Notes:
-
-* Reviews will be assigned  on Monday, December 4
-* You need to commit in order to be selected as a reviewer (ie. better to commit an empty work than not to commit)
