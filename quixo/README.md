@@ -43,4 +43,7 @@ Another possible solution can be the use of a different `evaluation` function, i
 Note: At the beginning it's better to fill change the neutral cells with the player's symbol, because it's better to have more possible moves to perform. More choices means more possibilities to win.
 
 ### Problem encountered
-If MinMaxPlayer plays againist itself, with this first implementation can loop forever or lose.
+If MinMaxPlayer plays againist itself, with this first implementation can loop forever or lose. Tjis problem is due to the fact that when the board is in a symmetric state, when the `get_possible_moves()` method is called, it returns the same moves sorted in the same way and the alpha beta minmax implemented selected the first optimal move, which is the same for both players.
+
+### Possible solution
+A possible solution can be the introduction of some randomness in the sorted list shuffling in the `get_possible_moves()` method the elements with the same piece symbol (neutral and not neutral) and same number of elements in line, in order to avoid the selection of the same moves first in the alpha beta pruning minmax. 

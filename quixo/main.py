@@ -118,9 +118,21 @@ class MinMaxPlayer(Player):
         for pm in possible_moves:
             new_game = deepcopy(game)
             new_game._Game__move(pm[0], pm[1], maximizing_player)
-            sorted_pm.append((pm, count_pieces(maximizing_player, new_game)))
-
-        return sorted(sorted_pm, key=lambda x: x[1], reverse=True)
+            # count the number of pieces in line the move creates and indicate if the piece is neutral or not in the original board
+            sorted_pm.append((pm, count_pieces(maximizing_player, new_game), game._board[pm[0][1]][pm[0][0]]))
+        # sort the possible moves in descending order based on the number of pieces in line
+        # putting firstly the moves with neutral pieces
+        sorted_pm = sorted(sorted_pm, key=lambda x: (-x[2], x[1]), reverse=True)
+        grouped_pm = {}
+        for pm in sorted_pm:
+            if (pm[1], pm[2]) not in grouped_pm:
+                grouped_pm[(pm[1], pm[2])] = []
+            grouped_pm[(pm[1], pm[2])].append(pm)
+        
+        for group in grouped_pm:
+            random.shuffle(grouped_pm[group])
+        shuffled_sorted_pm = [item for group in grouped_pm.values() for item in group]
+        return shuffled_sorted_pm
 
     def minmax(self, node, depth, game: 'Game', alpha, beta, maximizing_player = 0):
         # a node is terminal if there are no more moves to make
@@ -252,7 +264,7 @@ if __name__ == '__main__':
     print(f"Player 2: {colors['red']} 1 {colors['reset']}")
     
     # Test with random player
-    # test_0(100)
+    test_0(100)
     
     # Test with minmax player
-    test_1(100)
+    # test_1(100)
