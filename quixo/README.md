@@ -41,3 +41,6 @@ Another possible solution can be the use of a different `evaluation` function, i
 
 
 Note: At the beginning it's better to fill change the neutral cells with the player's symbol, because it's better to have more possible moves to perform. More choices means more possibilities to win.
+
+### Problem encountered
+If MinMaxPlayer plays againist itself, with this first implementation can loop forever or lose.
