@@ -29,4 +29,15 @@ Some possible approaches to mitigate this problems can be adopted.
 
 The first one is to use the so called `alpha beta pruning`, a method to discard some paths of the tree that are not useful to find the best move, in order to decrease the number of nodes to evaluate. It works as follows: two values, `alpha` and `beta` respectively represents the minimum score that the maximizing player is assured of and the maximum score that the minimizing player is assured of. Whenever the maximum score that the minimizing player (beta) is assured of becomes less than the minimum score that the maximizing player (alpha) is assured of, the maximizing player need not consider further descendants of this node, as they will never be reached in the actual play.
 
-Other ideas: DEEP PRUNING (order moves based on how likely they are going to be good, it's better to explore it at the beginning)
+Other ideas: DEEP PRUNING (order moves based on how likely they are going to be good, it's better to explore it at the beginning (sorting of possible moves)). The sort is poerformed directly in the `get_possible_moves()` method where the moves are sorted according to the number of player's symbols aligned.
+
+Another possible solution can be the use of a different depth value, thanks to the `is_losing` function. If the MinMaxPlayer is losing, it is necessary to explore more moves, so the depth can be increased. In the other case, if the MinMaxPlayer is winning, it is not necessary to predict so many steps, so the depth can be decreased. At the beginning it's not necessary to go more in the deep because the board is empty and each move can give the same results. This approach can be implemented by using a variable depth, that changes according to the situation of the game.
+
+Another possible solution can be the use of a different `evaluation` function, in order to evaluate the board in a different way, so that the algorithm can find the best move in a different way.
+* Protect your winning moves
+* Block the opponent's winning moves
+* Choose the moves that can give you more possibilities to win
+* Border moves can be used to block adversary's moves or to protect your winning moves
+
+
+Note: At the beginning it's better to fill change the neutral cells with the player's symbol, because it's better to have more possible moves to perform. More choices means more possibilities to win.
