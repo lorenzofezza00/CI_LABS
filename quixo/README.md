@@ -47,3 +47,18 @@ If MinMaxPlayer plays againist itself, with this first implementation can loop f
 
 ### Possible solution
 A possible solution can be the introduction of some randomness in the sorted list shuffling in the `get_possible_moves()` method the elements with the same piece symbol (neutral and not neutral) and same number of elements in line, in order to avoid the selection of the same moves first in the alpha beta pruning minmax. 
+
+potrei fare che la depth sia proporzionale al count_pieces dell'avversario
+potrei anche provare a salvare sa qualche parte dei pezzi di albero se possono essere riciclati
+
+Valutazione delle Posizioni:
+
+Assicurati che la tua funzione di valutazione delle posizioni sia abbastanza varia da gestire situazioni simmetriche o simili. Se le posizioni sono valutate in modo troppo simile, Minimax potrebbe finire in loop.
+Regole per Forzare la Variazione:
+
+Introduce regole specifiche che forzano la variazione nel gioco. Ad esempio, potresti implementare una regola che impedisce la ripetizione dello stesso stato di gioco per un certo numero di mosse.
+Tavola di Transposizione:
+
+Usa una tavola di transposizione per memorizzare posizioni già esaminate e le relative valutazioni. Questo può aiutare a evitare la ricomputazione di posizioni già analizzate, ma è importante gestire correttamente le collisioni nella tavola di transposizione.
+
+C'é un problema, quando mi trovo in una situazione in cui l'avversario sta per vincere, bisogna scegliere l'operazione che allontana dalla vittoria

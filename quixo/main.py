@@ -13,17 +13,16 @@ class RandomPlayer(Player):
         move = random.choice([Move.TOP, Move.BOTTOM, Move.LEFT, Move.RIGHT])
         return from_pos, move
 
-def is_losing(player_id, game: 'Game') -> bool:
-        len = 2
+def is_losing(player_id, len, game: 'Game') -> bool:
         # if the adversary has a line of len+1 pieces, I am losing
         for i in range(game._board.shape[0]):
-            if sum(game._board[i, :] == (player_id+1)%2) > len:
+            if sum(game._board[i, :] == (player_id+1)%2) >= len:
                 return True
-            if sum(game._board[:, i] == (player_id+1)%2) > len:
+            if sum(game._board[:, i] == (player_id+1)%2) >= len:
                 return True
-        if sum(game._board.diagonal() == (player_id+1)%2) > len:
+        if sum(game._board.diagonal() == (player_id+1)%2) >= len:
             return True
-        if sum(game._board[::-1].diagonal() == (player_id+1)%2) > len:
+        if sum(game._board[::-1].diagonal() == (player_id+1)%2) >= len:
             return True
         
 def count_pieces(maximizing_player, new_game: 'Game') -> int:
@@ -64,10 +63,10 @@ class MinMaxPlayer(Player):
             return float('-inf')
         else:
             return 0'''
-    def evaluate(self, game: 'Game') -> float:
-        if game.check_winner() == self.player_id:
+    def evaluate(self, winner, game : 'Game') -> float:
+        if winner == self.player_id:
             return float('inf')
-        elif game.check_winner() == (self.player_id+1)%2:
+        elif winner == (self.player_id+1)%2:
             return float('-inf')
         else:
             max_p1 = count_pieces(self.player_id, game)
@@ -122,7 +121,7 @@ class MinMaxPlayer(Player):
             sorted_pm.append((pm, count_pieces(maximizing_player, new_game), game._board[pm[0][1]][pm[0][0]]))
         # sort the possible moves in descending order based on the number of pieces in line
         # putting firstly the moves with neutral pieces
-        sorted_pm = sorted(sorted_pm, key=lambda x: (-x[2], x[1]), reverse=True)
+        sorted_pm = sorted(sorted_pm, key=lambda x: (x[1], -x[2]), reverse=True)
         grouped_pm = {}
         for pm in sorted_pm:
             if (pm[1], pm[2]) not in grouped_pm:
@@ -136,8 +135,9 @@ class MinMaxPlayer(Player):
 
     def minmax(self, node, depth, game: 'Game', alpha, beta, maximizing_player = 0):
         # a node is terminal if there are no more moves to make
-        if depth == 0 or is_terminal(node):
-            value = self.evaluate(game)
+        winner = game.check_winner()
+        if depth == 0 or winner != -1 or is_terminal(node):
+            value = self.evaluate(winner, game)
             '''if value!=0:
                 print(f"{colors['yellow']} Found! {value} {colors['reset']}")
                 game.print()'''
@@ -178,23 +178,34 @@ class MinMaxPlayer(Player):
             depth = 3
         else:
             depth = 6'''
-        # if I am losing, I will search deeper to find the best move to avoid losing
-        '''if is_losing(self.player_id, game):
-            depth = 5
-        # if I am winning, I will search less to find the best move to win
-        elif is_losing((self.player_id+1)%2, game):
+        
+        '''# if I am losing because the opponent has len symbols in line, I will search deeper to find the best move to avoid losing
+        depth = 1
+        if is_losing(self.player_id, 3, game):
+            depth = 4
+        # if I am winning because I have len symbols in line, I will search less to find the best move to win
+        elif is_losing((self.player_id+1)%2, 3, game):
             depth = 3'''
-        if is_losing(self.player_id, game) or is_losing((self.player_id+1)%2, game):
+        
+        '''if is_losing(self.player_id, game) or is_losing((self.player_id+1)%2, game):
             depth = 3
         # if I am far from winning or losing, I don't need to search
+        else:
+            depth = 1'''
+        
+        if is_losing(self.player_id, 3, game) or is_losing((self.player_id+1)%2, 3, game):
+            max_p1 = count_pieces(self.player_id, game)
+            max_p2 = count_pieces((self.player_id+1)%2, game)
+            depth = min(abs(max_p1 - max_p2) + 3, 4)
+            print(f"depth: {depth}")
         else:
             depth = 1
 
         alpha = float('-inf')
         beta = float('inf')
         b_val = float('-inf')
+        # A trick can be to begin from one corner so this if should work only for the first move
         if possible_moves[0][1] <= 1:
-            # A trick can be to begin from one corner
             from_pos, move = random.choice(list(filter(lambda pm : pm[0][0] == (0, 0) or
                                                                         pm[0][0] == (0, game._board.shape[1]-1) or
                                                                         pm[0][0] == (game._board.shape[0]-1, 0) or
@@ -211,7 +222,7 @@ class MinMaxPlayer(Player):
             next_game._Game__move(child[0][0], child[0][1], self.player_id%2)
             p_moves = self.get_possible_moves(next_game, (self.player_id+1)%2)
             val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (self.player_id+1)%2)
-            if val > b_val and val > 0:
+            if val > b_val: # and val > 0:
                 b_val = val
                 from_pos = child[0][0]
                 move = child[0][1]
@@ -220,6 +231,7 @@ class MinMaxPlayer(Player):
 
 def test_0(test_episodes):
     win = 0
+    i = 0
     for _ in tqdm(range(test_episodes)):
         g = Game(verbose=True)
         #player1 = MyPlayer()
@@ -230,11 +242,14 @@ def test_0(test_episodes):
         g.print()
         print(f"Winner: Player {winner+1}")
         if winner==0:
-            win+=1
+            win+=1    
+        print(f"Actual percentage: {win/(i+1)}")
+        i+=1
     print(f"Win percentage: {win/test_episodes}")
 
 def test_1(test_episodes):
     win = 0
+    i = 0
     for _ in tqdm(range(test_episodes)):
         g = Game(verbose=True)
         #player1 = MyPlayer()
@@ -246,6 +261,8 @@ def test_1(test_episodes):
         print(f"Winner: Player {winner+1}")
         if winner==0:
             win+=1
+        print(f"Actual percentage: {win/(i+1)}")
+        i+=1
     print(f"Win percentage: {win/test_episodes}")
 
 if __name__ == '__main__':
@@ -264,7 +281,8 @@ if __name__ == '__main__':
     print(f"Player 2: {colors['red']} 1 {colors['reset']}")
     
     # Test with random player
-    test_0(100)
+    # test_0(100)
+    # test_0(10)
     
     # Test with minmax player
-    # test_1(100)
+    test_1(100)
