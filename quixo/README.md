@@ -49,7 +49,7 @@ If MinMaxPlayer plays againist itself, with this first implementation can loop f
 A possible solution can be the introduction of some randomness in the sorted list shuffling in the `get_possible_moves()` method the elements with the same piece symbol (neutral and not neutral) and same number of elements in line, in order to avoid the selection of the same moves first in the alpha beta pruning minmax. 
 
 potrei fare che la depth sia proporzionale al count_pieces dell'avversario
-potrei anche provare a salvare sa qualche parte dei pezzi di albero se possono essere riciclati
+potrei anche provare a salvare da qualche parte dei pezzi di albero se possono essere riciclati
 
 Valutazione delle Posizioni:
 
@@ -61,4 +61,6 @@ Tavola di Transposizione:
 
 Usa una tavola di transposizione per memorizzare posizioni già esaminate e le relative valutazioni. Questo può aiutare a evitare la ricomputazione di posizioni già analizzate, ma è importante gestire correttamente le collisioni nella tavola di transposizione.
 
-C'é un problema, quando mi trovo in una situazione in cui l'avversario sta per vincere, bisogna scegliere l'operazione che allontana dalla vittoria
+C'é un problema, quando ho una situazione in cui ho 3 in fila al bordo e nient'altro al bordo mi frega (ultimo screen che mi sono fatto)
+
+Trovato il problema: l'if dentro minmax non era giusto, faccio male quello che metto come argomento di maximizingplayer e l'if proprio

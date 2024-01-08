@@ -25,13 +25,22 @@ def is_losing(player_id, len, game: 'Game') -> bool:
         if sum(game._board[::-1].diagonal() == (player_id+1)%2) >= len:
             return True
         
-def count_pieces(maximizing_player, new_game: 'Game') -> int:
+def max_inline_pieces(maximizing_player, new_game: 'Game') -> int:
     cnt = 0
     for i in range(new_game._board.shape[0]):
         cnt = max(cnt, sum(new_game._board[i, :] == maximizing_player))
         cnt = max(cnt, sum(new_game._board[:, i] == maximizing_player))
     cnt = max(cnt, sum(new_game._board.diagonal() == maximizing_player))
     cnt = max(cnt, sum(new_game._board[::-1].diagonal() == maximizing_player))
+    return cnt
+
+def count_pieces(maximizing_player, new_game: 'Game') -> int:
+    cnt = 0
+    for i in range(new_game._board.shape[0]):
+        cnt +=  sum(new_game._board[i, :] == maximizing_player)
+        cnt +=  sum(new_game._board[:, i] == maximizing_player)
+    cnt += sum(new_game._board.diagonal() == maximizing_player)
+    cnt += sum(new_game._board[::-1].diagonal() == maximizing_player)
     return cnt
 
 def is_terminal(node) -> bool:
@@ -47,6 +56,27 @@ class MyPlayer(Player):
         from_pos = (random.randint(0, 4), random.randint(0, 4))
         move = random.choice([Move.TOP, Move.BOTTOM, Move.LEFT, Move.RIGHT])
         return from_pos, move
+
+class HumanPlayer(Player):
+    def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:
+        print("Enter your move:")
+        while True:
+            try:
+                # Get user input for row and column
+                row = int(input("Enter row (0-4): "))
+                col = int(input("Enter column (0-4): "))
+
+                # Get user input for move direction
+                move_input = input("Enter move direction (TOP, BOTTOM, LEFT, RIGHT): ").upper()
+                move = Move[move_input]
+
+                # Check if the move is valid
+                if 0 <= row <= 4 and 0 <= col <= 4 and move in Move:
+                    return (col, row), move
+                else:
+                    print("Invalid move. Please try again.")
+            except (ValueError, KeyError):
+                print("Invalid input. Please enter integers for row and column, and a valid move direction.")
 
 class MinMaxPlayer(Player):
     def __init__(self, player_id) -> None:
@@ -64,13 +94,13 @@ class MinMaxPlayer(Player):
         else:
             return 0'''
     def evaluate(self, winner, game : 'Game') -> float:
-        if winner == self.player_id:
+        if winner == self.player_id%2:
             return float('inf')
         elif winner == (self.player_id+1)%2:
             return float('-inf')
         else:
-            max_p1 = count_pieces(self.player_id, game)
-            max_p2 = count_pieces((self.player_id+1)%2, game)
+            max_p1 = max_inline_pieces(self.player_id, game)
+            max_p2 = max_inline_pieces((self.player_id+1)%2, game)
             return max_p1 - max_p2
             '''if is_losing(self.player_id%2, game):
                 return -1
@@ -118,7 +148,7 @@ class MinMaxPlayer(Player):
             new_game = deepcopy(game)
             new_game._Game__move(pm[0], pm[1], maximizing_player)
             # count the number of pieces in line the move creates and indicate if the piece is neutral or not in the original board
-            sorted_pm.append((pm, count_pieces(maximizing_player, new_game), game._board[pm[0][1]][pm[0][0]]))
+            sorted_pm.append((pm, max_inline_pieces(maximizing_player, new_game), game._board[pm[0][1]][pm[0][0]]))
         # sort the possible moves in descending order based on the number of pieces in line
         # putting firstly the moves with neutral pieces
         sorted_pm = sorted(sorted_pm, key=lambda x: (x[1], -x[2]), reverse=True)
@@ -142,7 +172,7 @@ class MinMaxPlayer(Player):
                 print(f"{colors['yellow']} Found! {value} {colors['reset']}")
                 game.print()'''
             return value
-        if maximizing_player == 0:
+        if maximizing_player == self.player_id:
             b_val = float('-inf')
             for child in node:
                 next_game = deepcopy(game)
@@ -194,8 +224,8 @@ class MinMaxPlayer(Player):
             depth = 1'''
         
         if is_losing(self.player_id, 3, game) or is_losing((self.player_id+1)%2, 3, game):
-            max_p1 = count_pieces(self.player_id, game)
-            max_p2 = count_pieces((self.player_id+1)%2, game)
+            max_p1 = max_inline_pieces(self.player_id, game)
+            max_p2 = max_inline_pieces((self.player_id+1)%2, game)
             depth = min(abs(max_p1 - max_p2) + 3, 4)
             print(f"depth: {depth}")
         else:
@@ -265,6 +295,17 @@ def test_1(test_episodes):
         i+=1
     print(f"Win percentage: {win/test_episodes}")
 
+def human_test():
+    player1 = MinMaxPlayer(0)
+    player2 = HumanPlayer()
+
+    game = Game(verbose=True)
+
+    while True:
+        winner = game.play(player1, player2)
+        if winner != -1:
+            print(f"Player {winner + 1} wins!")
+
 if __name__ == '__main__':
     # Prof test
     '''g = Game()
@@ -286,3 +327,5 @@ if __name__ == '__main__':
     
     # Test with minmax player
     test_1(100)
+
+    # human_test()
