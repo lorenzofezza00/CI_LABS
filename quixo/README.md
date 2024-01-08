@@ -48,19 +48,10 @@ If MinMaxPlayer plays againist itself, with this first implementation can loop f
 ### Possible solution
 A possible solution can be the introduction of some randomness in the sorted list shuffling in the `get_possible_moves()` method the elements with the same piece symbol (neutral and not neutral) and same number of elements in line, in order to avoid the selection of the same moves first in the alpha beta pruning minmax. 
 
-potrei fare che la depth sia proporzionale al count_pieces dell'avversario
+### Other improvements
+The depth can changed in different ways. At the beginning the choice is irrelevant, a trick can be begin from angles or borders, because they can be used to block adversary's moves or to protect your winning moves so the minmax can be avoided for the first move and the depth is put to 1 for the next moves. Many attempts have been done in order to provide the best solution in the next turns, trying to increase the depth to 3 if the player is winning or losing. The optimal variation of the depth, but also the slowest one (reaching a maximum depth of 4, more takes too time) is to choose the depth to be proportional to the `max_inline_pieces()` method when one of the two players is winning or losing. When the agent is winning or losing (so using the `is_losing()` method) the depth can be increased or decreased for the following reasons:
+* if the opponent is tricking the MinMaxPlayer making it gain more scores (so faking to lose), it will be able to find recognize the trick finding the moves that can make the opponent to win
+* if the opponent is winning, more depth is needed to find the best move to defeat from it and than to win
+Than, if there is a move which takes the player to win, it can be performed without goigh through the decision tree
+
 potrei anche provare a salvare da qualche parte dei pezzi di albero se possono essere riciclati
-
-Valutazione delle Posizioni:
-
-Assicurati che la tua funzione di valutazione delle posizioni sia abbastanza varia da gestire situazioni simmetriche o simili. Se le posizioni sono valutate in modo troppo simile, Minimax potrebbe finire in loop.
-Regole per Forzare la Variazione:
-
-Introduce regole specifiche che forzano la variazione nel gioco. Ad esempio, potresti implementare una regola che impedisce la ripetizione dello stesso stato di gioco per un certo numero di mosse.
-Tavola di Transposizione:
-
-Usa una tavola di transposizione per memorizzare posizioni già esaminate e le relative valutazioni. Questo può aiutare a evitare la ricomputazione di posizioni già analizzate, ma è importante gestire correttamente le collisioni nella tavola di transposizione.
-
-C'é un problema, quando ho una situazione in cui ho 3 in fila al bordo e nient'altro al bordo mi frega (ultimo screen che mi sono fatto)
-
-Trovato il problema: l'if dentro minmax non era giusto, faccio male quello che metto come argomento di maximizingplayer e l'if proprio

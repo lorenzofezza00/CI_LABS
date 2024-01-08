@@ -281,7 +281,7 @@ def test_1(test_episodes):
     win = 0
     i = 0
     for _ in tqdm(range(test_episodes)):
-        g = Game(verbose=True)
+        g = Game(verbose=False)
         #player1 = MyPlayer()
         player1 = MinMaxPlayer(0)
         player2 = MinMaxPlayer(1)
@@ -323,7 +323,6 @@ if __name__ == '__main__':
     
     # Test with random player
     # test_0(100)
-    # test_0(10)
     
     # Test with minmax player
     test_1(100)
