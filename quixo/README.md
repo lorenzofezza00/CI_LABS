@@ -63,3 +63,5 @@ Potrei anche provare a salvare da qualche parte dei pezzi di albero se possono e
 The last version of the algorithm takes about 25 minutes to perform 100 games with a random player (about 15 seconds per game) and it takes much more time to play againist himself. This time is variabe according to the depth of the tree, that the minmax algorithm has to explore.
 
 The implemented player is capable to win always againist a random player, but is not able to always win againist itself. This is due to the fact that the algorithm is not able to find the best move in a reasonable time if the depth is increased so much and if the depth is decreased, the algorithm is not always able to find the best move to defeat the opponent.
+
+<!-- Mettere i calcoli di quante mosse riesco a predirre (al massimo o minimo, quindi a inizio e fine gioco, quando ci sono pochi -1) così da dire quanto dovrebbe essere bravo un giocatore umano per poter battere il mio minmax. Il mio minmax non é imbattibile, ma difficile da battere andando in profondità fino a un certo livello -->
