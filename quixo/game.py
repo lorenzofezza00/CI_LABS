@@ -3,15 +3,7 @@ from copy import deepcopy
 from enum import Enum
 import numpy as np
 
-# Rules on PDF
-
-colors = {
-    'reset': "\033[0m",
-    'red': "\033[91m",
-    'green': "\033[92m",
-    'yellow': "\033[93m",
-    'blue': "\033[94m"
-}
+# Rules on PDF and https://cdn.1j1ju.com/medias/a8/5e/26-quixo-rulebook.pdf
 
 
 class Move(Enum):
@@ -42,10 +34,9 @@ class Player(ABC):
 
 
 class Game(object):
-    def __init__(self, verbose=False) -> None:
+    def __init__(self) -> None:
         self._board = np.ones((5, 5), dtype=np.uint8) * -1
         self.current_player_idx = 1
-        self.verbose = verbose
 
     def get_board(self) -> np.ndarray:
         '''
@@ -61,26 +52,7 @@ class Game(object):
 
     def print(self):
         '''Prints the board. -1 are neutral pieces, 0 are pieces of player 0, 1 pieces of player 1'''
-        # print(self._board)
-        cnt_0 = 0
-        cnt_1 = 0
-        for row in self._board:
-            for col in row:
-                if col == -1:
-                    print(f"{colors['blue']} {col} {colors['reset']}", end="")
-                elif col == 1:
-                    cnt_1 += 1
-                    print(f"{colors['red']}  {col} {colors['reset']}", end="")
-                else:
-                    cnt_0 += 1
-                    print(f"{colors['green']}  {col} {colors['reset']}", end="")
-            print()
-        # It's ok to have a difference of symbols > 1, because, in some turns a player
-        # can decide to use cube with his symbol, so it doesn't change the number of symbol used
-        '''if abs(cnt_0-cnt_1) > 1:
-            print(f"{colors['yellow']} Player 1: {cnt_0} symbols\tPlayer 2: {cnt_1} symbols {colors['reset']}")
-        else :
-            print(f"Player 1: {cnt_0} symbols\tPlayer 2: {cnt_1} symbols")'''
+        print(self._board)
 
     def check_winner(self) -> int:
         '''Check the winner. Returns the player ID of the winner if any, otherwise returns -1'''
@@ -132,17 +104,6 @@ class Game(object):
                 from_pos, slide = players[self.current_player_idx].make_move(
                     self)
                 ok = self.__move(from_pos, slide, self.current_player_idx)
-                if not ok and self.verbose:
-                    if self.current_player_idx == 0:
-                        print(f"{colors['red']} Player {self.current_player_idx+1} moves {from_pos} {slide} {colors['reset']}")
-                    else:
-                        print(f"Player {self.current_player_idx+1} moves {from_pos} {slide}")
-            if self.verbose:
-                if self.current_player_idx == 0:
-                    print(f"{colors['green']} Player {self.current_player_idx+1} moves {from_pos} {slide} {colors['reset']}")
-                else:
-                    print(f"Player {self.current_player_idx+1} moves {from_pos} {slide}")
-                self.print()
             winner = self.check_winner()
         return winner
 

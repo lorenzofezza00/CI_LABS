@@ -1,8 +1,16 @@
 import random
 import numpy as np
-from game import Game, Move, Player, colors
+from game import Game, Move, Player
 from copy import deepcopy
 from tqdm.auto import tqdm
+
+colors = {
+    'reset': "\033[0m",
+    'red': "\033[91m",
+    'green': "\033[92m",
+    'yellow': "\033[93m",
+    'blue': "\033[94m"
+}
 
 class RandomPlayer(Player):
     def __init__(self) -> None:
@@ -42,6 +50,65 @@ class HumanPlayer(Player):
                     print("Invalid move. Please try again.")
             except (ValueError, KeyError):
                 print("Invalid input. Please enter integers for row and column, and a valid move direction.")
+
+
+class MyGame(Game):
+    def __init__(self, verbose=False) -> None:
+        self._board = np.ones((5, 5), dtype=np.uint8) * -1
+        self.current_player_idx = 1
+        self.verbose = verbose
+
+    def print(self):
+        '''Prints the board. -1 are neutral pieces, 0 are pieces of player 0, 1 pieces of player 1'''
+        # print(self._board)
+        # cnt_0 = 0
+        # cnt_1 = 0
+        for row in self._board:
+            for col in row:
+                if col == -1:
+                    print(f"{colors['blue']} {col} {colors['reset']}", end="")
+                elif col == 1:
+                    # cnt_1 += 1
+                    print(f"{colors['red']}  {col} {colors['reset']}", end="")
+                else:
+                    # cnt_0 += 1
+                    print(f"{colors['green']}  {col} {colors['reset']}", end="")
+            print()
+        # It's ok to have a difference of symbols > 1, because, in some turns a player
+        # can decide to use cube with his symbol, so it doesn't change the number of symbol used
+        '''if abs(cnt_0-cnt_1) > 1:
+            print(f"{colors['yellow']} Player 1: {cnt_0} symbols\tPlayer 2: {cnt_1} symbols {colors['reset']}")
+        else :
+            print(f"Player 1: {cnt_0} symbols\tPlayer 2: {cnt_1} symbols")'''
+
+    def play(self, player1: Player, player2: Player) -> int:
+        '''Play the game. Returns the winning player'''
+        players = [player1, player2]
+        winner = -1
+        while winner < 0:
+            self.current_player_idx += 1
+            self.current_player_idx %= len(players)
+            ok = False
+            while not ok:
+                from_pos, slide = players[self.current_player_idx].make_move(
+                    self)
+                ok = self.__move(from_pos, slide, self.current_player_idx)
+                if not ok and self.verbose:
+                    if self.current_player_idx == 0:
+                        print(f"{colors['red']} Player {self.current_player_idx+1} moves {from_pos} {slide} {colors['reset']}")
+                    else:
+                        print(f"Player {self.current_player_idx+1} moves {from_pos} {slide}")
+            if self.verbose:
+                if self.current_player_idx == 0:
+                    print(f"{colors['green']} Player {self.current_player_idx+1} moves {from_pos} {slide} {colors['reset']}")
+                else:
+                    print(f"Player {self.current_player_idx+1} moves {from_pos} {slide}")
+                self.print()
+            winner = self.check_winner()
+        return winner
+    
+    def __move(self, from_pos: tuple[int, int], slide: Move, player_idx: int) -> bool:
+        return super()._Game__move(from_pos, slide, player_idx)
 
 
 def is_losing(player_id, len, game: 'Game') -> bool:
@@ -249,22 +316,32 @@ class MinMaxPlayer(Player):
             return possible_moves[0][0]
         else:
             from_pos, move = possible_moves[0][0]
-
-        if is_losing(self.player_id, 3, game) or is_losing((self.player_id+1)%2, 3, game):
-            max_p1 = max_inline_pieces(self.player_id, game)
-            max_p2 = max_inline_pieces((self.player_id+1)%2, game)
-            depth = min(abs(max_p1 - max_p2) + 3, 4)
-            # print(f"depth: {depth}")
-        else:
-            depth = 1
-
         '''if depth != 1:
             if self.tree is None:
                 self.tree = TreeNode(game._board, None)
             else:
                 self.tree = self.tree.search(game._board)'''
-            
-
+        
+        # if someone is losign depth variation
+        '''if is_losing(self.player_id, 3, game) or is_losing((self.player_id+1)%2, 3, game):
+            max_p1 = max_inline_pieces(self.player_id, game)
+            max_p2 = max_inline_pieces((self.player_id+1)%2, game)
+            # depth = min(abs(max_p1 - max_p2) + 3, 4)
+            depth = abs(max_p1 - max_p2) + 1
+            print(f"depth: {depth}")
+        else:
+            depth = 1'''
+        
+        # advantage depth variation
+        # if the opponent is playing bad, I don't need to anticipate so many moves
+        # if the opponent is playing good, max_p2 will be more than or equal to
+        # the (advantage + 1) = [abs(max_p1 - max_p2) + 1]
+        # so I will go deep of (advantage + 1)
+        max_p1 = max_inline_pieces(self.player_id, game)
+        max_p2 = max_inline_pieces((self.player_id+1)%2, game)
+        depth = min(abs(max_p1 - max_p2) + 1, max_p2)
+        print(f"depth: {depth}")
+        
         for child in possible_moves:
             next_game = deepcopy(game)
             next_game._Game__move(child[0][0], child[0][1], self.player_id%2)
@@ -277,12 +354,12 @@ class MinMaxPlayer(Player):
                 move = child[0][1]
         return from_pos, move
 
-
 def test_0(test_episodes):
     win = 0
     i = 0
     for _ in tqdm(range(test_episodes)):
-        g = Game(verbose=True)
+        #g = MyGame(verbose=True)
+        g = Game()
         #player1 = MyPlayer()
         player1 = MinMaxPlayer(0)
         player2 = RandomPlayer()
@@ -300,7 +377,7 @@ def test_1(test_episodes):
     win = 0
     i = 0
     for _ in tqdm(range(test_episodes)):
-        g = Game(verbose=True)
+        g = MyGame(verbose=True)
         #player1 = MyPlayer()
         player1 = MinMaxPlayer(0)
         player2 = MinMaxPlayer(1)
@@ -318,12 +395,13 @@ def human_test():
     player1 = MinMaxPlayer(0)
     player2 = HumanPlayer()
 
-    game = Game(verbose=True)
+    game = MyGame(verbose=True)
 
     while True:
         winner = game.play(player1, player2)
         if winner != -1:
             print(f"Player {winner + 1} wins!")
+            break
 
 if __name__ == '__main__':
     # Prof test
@@ -341,9 +419,9 @@ if __name__ == '__main__':
     print(f"Player 2: {colors['red']} 1 {colors['reset']}")
     
     # Test with random player
-    # test_0(100)
+    test_0(100)
     
     # Test with minmax player
-    test_1(100)
+    # test_1(100)
 
     # human_test()

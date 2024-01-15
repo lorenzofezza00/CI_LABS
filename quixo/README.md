@@ -54,6 +54,12 @@ The depth can changed in different ways. At the beginning the choice is irreleva
 * if the opponent is winning, more depth is needed to find the best move to defeat and than to win
 Than, if there is a move which makes the player win, it can be performed without goigh through the decision tree.
 
-The final version of the algorithm makes the 2 MinMaxPlayers always draw.
-
+<!-- 
 Potrei anche provare a salvare da qualche parte dei pezzi di albero se possono essere riciclati => Non utile perche se vado piu in profondita non posso riutilizzare i pezzi di albero gia esplorati.
+ -->
+
+## Results
+
+The last version of the algorithm takes about 25 minutes to perform 100 games with a random player (about 15 seconds per game) and it takes much more time to play againist himself. This time is variabe according to the depth of the tree, that the minmax algorithm has to explore.
+
+The implemented player is capable to win always againist a random player, but is not able to always win againist itself. This is due to the fact that the algorithm is not able to find the best move in a reasonable time if the depth is increased so much and if the depth is decreased, the algorithm is not always able to find the best move to defeat the opponent.
