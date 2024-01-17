@@ -353,8 +353,8 @@ class MinMaxPlayer(Player):
                 from_pos = child[0][0]
                 move = child[0][1]
         return from_pos, move
-
-def test_0(test_episodes):
+    
+def test_0_begin_first(test_episodes):
     win = 0
     i = 0
     for _ in tqdm(range(test_episodes)):
@@ -368,6 +368,25 @@ def test_0(test_episodes):
         g.print()
         print(f"Winner: Player {winner+1}")
         if winner==0:
+            win+=1    
+        print(f"Actual percentage: {win/(i+1)}")
+        i+=1
+    print(f"Win percentage: {win/test_episodes}")
+
+def test_0(test_episodes):
+    win = 0
+    i = 0
+    for _ in tqdm(range(test_episodes)):
+        #g = MyGame(verbose=True)
+        g = Game()
+        #player1 = MyPlayer()
+        player1 = RandomPlayer()
+        player2 = MinMaxPlayer(1)
+        winner = g.play(player1, player2)
+        print()
+        g.print()
+        print(f"Winner: Player {winner+1}")
+        if winner==1:
             win+=1    
         print(f"Actual percentage: {win/(i+1)}")
         i+=1
