@@ -140,5 +140,5 @@ if __name__ == '__main__':
     else:
         p1 = globals()[args.p1]
         p2 = globals()[args.p2]
-        test(100, p1, p2, args.my_player, mode=args.mode)
+        test(args.n_tests, p1, p2, args.my_player, mode=args.mode)
         
