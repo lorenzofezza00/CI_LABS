@@ -4,7 +4,7 @@ from tqdm.auto import tqdm
 import random
 from mygame import MyGame, colors
 from minmax import MinMaxPlayer
-from mcts import MctsPlayer
+import argparse
 
 class RandomPlayer(Player):
     def __init__(self) -> None:
@@ -45,27 +45,8 @@ class HumanPlayer(Player):
                     print("Invalid move. Please try again.")
             except (ValueError, KeyError):
                 print("Invalid input. Please enter integers for row and column, and a valid move direction.")
-    
-def test_0_begin_first(test_episodes):
-    win = 0
-    i = 0
-    for _ in tqdm(range(test_episodes)):
-        #g = MyGame(verbose=True)
-        g = Game()
-        #player1 = MyPlayer()
-        player1 = MinMaxPlayer()
-        player2 = RandomPlayer()
-        winner = g.play(player1, player2)
-        print()
-        g.print()
-        print(f"Winner: Player {winner+1}")
-        if winner==0:
-            win+=1    
-        print(f"Actual percentage: {win/(i+1)}")
-        i+=1
-    print(f"Win percentage: {win/test_episodes}")
 
-def test_0(test_episodes, mode='Game'):
+def test(test_episodes, p1, p2, my_player, mode='Game'):
     win = 0
     i = 0
     for _ in tqdm(range(test_episodes)):
@@ -75,71 +56,67 @@ def test_0(test_episodes, mode='Game'):
             g = MyGame(verbose=True)
         
         #player1 = MyPlayer()
-        player1 = RandomPlayer()
-        player2 = MinMaxPlayer()
+        player1 = p1()
+        player2 = p2()
         winner = g.play(player1, player2)
         print()
         g.print()
         print(f"Winner: Player {winner+1}")
-        if winner==1:
+        if winner==my_player%2:
             win+=1    
         print(f"Actual percentage: {win/(i+1)}")
         i+=1
     print(f"Win percentage: {win/test_episodes}")
 
-def test_1(test_episodes, mode='Game'):
-    win = 0
-    i = 0
-    for _ in tqdm(range(test_episodes)):
-        if mode=='Game':
-            g = Game()
-        else:
-            g = MyGame(verbose=True)
-        #player1 = MyPlayer()
-        player1 = MinMaxPlayer()
-        player2 = MinMaxPlayer()
-        winner = g.play(player1, player2)
-        print()
-        g.print()
-        print(f"Winner: Player {winner+1}")
-        if winner==0:
-            win+=1
-        print(f"Actual percentage: {win/(i+1)}")
-        i+=1
-    print(f"Win percentage: {win/test_episodes}")
+def human_test(p1, p2, mode='Game'):
+    player1 = p1()
+    player2 = p2()
 
-def human_test():
-    player1 = MinMaxPlayer()
-    player2 = HumanPlayer()
-
-    game = MyGame(verbose=True)
+    if mode=='Game':
+        g = Game()
+    else:
+        g = MyGame(verbose=True)
 
     while True:
-        winner = game.play(player1, player2)
+        winner = g.play(player1, player2)
         if winner != -1:
             print(f"Player {winner + 1} wins!")
             break
 
-def test_fra(test_episodes, mode='Game'):
-    win = 0
-    i = 0
-    for _ in tqdm(range(test_episodes)):
-        if mode=='Game':
-            g = Game()
-        else:
-            g = MyGame(verbose=True)
-        #player1 = MyPlayer()
-        player1 = MinMaxPlayer()
-        player2 = MctsPlayer()
-        winner = g.play(player1, player2)
-        print()
-        g.print()
-        print(f"Winner: Player {winner+1}")
-        if winner==0:
-            win+=1
-        print(f"Actual percentage: {win/(i+1)}")
-        i+=1
-    print(f"Win percentage: {win/test_episodes}")
+def parse_args():
+    parse = argparse.ArgumentParser()
+
+    parse.add_argument('--mode',
+                       dest='mode',
+                       type=str,
+                       default='MyGame',
+    )
+    parse.add_argument('--p1',
+                       dest='p1',
+                       type=str,
+                       default='RandomPlayer',
+    )
+    parse.add_argument('--p2',
+                       dest='p2',
+                       type=str,
+                       default='MinMaxPlayer',
+    )
+    parse.add_argument('--n_tests',
+                       dest='n_tests',
+                       type=int,
+                       default=100,
+    )
+    parse.add_argument('--my_player',
+                       dest='my_player',
+                       type=int,
+                       default=1,
+    )
+    parse.add_argument('--human',
+                       dest='human',
+                       type=bool,
+                       default=False,
+    )
+    return parse.parse_args()
 
 if __name__ == '__main__':
     # Prof test
@@ -153,14 +130,15 @@ if __name__ == '__main__':
     g.print()
     print(f"Winner: Player {winner+1}")'''
     
+    args = parse_args()
+
     print(f"Player 1: {colors['green']} 0 {colors['reset']}")
     print(f"Player 2: {colors['red']} 1 {colors['reset']}")
-    
-    # Test with random player
-    # test_0(100, mode='MyGame')
-    
-    # Test with minmax player
-    # test_1(100)
-
-    # human_test()
-    test_fra(20, mode='MyGame')
+    # test(100, MinMaxPlayer, RandomPlayer, mode='MyGame')
+    if args.human:
+        human_test(HumanPlayer, MinMaxPlayer, mode=args.mode)
+    else:
+        p1 = globals()[args.p1]
+        p2 = globals()[args.p2]
+        test(100, p1, p2, args.my_player, mode=args.mode)
+        
