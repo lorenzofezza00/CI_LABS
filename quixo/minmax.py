@@ -1,6 +1,9 @@
 from game import Game, Move, Player
 from copy import deepcopy
 import random
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_pydot import graphviz_layout
 
 def is_losing(player_id, len, game: 'Game') -> bool:
         # if the adversary has a line of len+1 pieces, I am losing
@@ -28,25 +31,38 @@ def is_terminal(node) -> bool:
             return True
         return False
 
-'''class TreeNode:
-    def __init__(self, state, move):
-        self.state = state
-        self.move = move
-        self.children = []
+class TreeNode:
+    node_count = 0  # Class-level variable to count nodes with the same value
+
+    def __init__(self, val):
+        self.val = val
+        self.index = TreeNode.node_count
+        TreeNode.node_count += 1
+        self.child = []
+
+    def add_to_graph(self, graph, parent_name=None, parent_node=None):
+        node_name = f"{str(self.val)}_{self.index}"  # Add index to node name
+        graph.add_node(node_name)
+
+        if parent_name:
+            graph.add_edge(parent_name, node_name)
+
+        for child in self.child:
+            child.add_to_graph(graph, node_name, self)
+
+    def print_tree(self, depth=0):
+        indent = "  " * depth
+        print(f"{indent}Value: {self.val}")
+        for child in self.child:
+            child.print_tree(depth + 1)
 
     def add_child(self, child):
-        self.children.append(child)
-
-    def search(self, state):
-        if self.state == state:
-            return deepcopy(self)
-        else:
-            for child in self.children:
-                return child.search(state)'''
+        self.child.append(child)
 
 class MinMaxPlayer(Player):
-    def __init__(self) -> None:
+    def __init__(self, plot_trees=False) -> None:
         super().__init__()
+        self.plot_trees = plot_trees
     
     # evaluate the board
     
@@ -132,11 +148,12 @@ class MinMaxPlayer(Player):
         shuffled_sorted_pm = [item for group in grouped_pm.values() for item in group]
         return shuffled_sorted_pm
 
-    def minmax(self, node, depth, game: 'Game', alpha, beta, maximizing_player, pid):
+    def minmax(self, node, depth, game: 'Game', alpha, beta, maximizing_player, pid, tree):
         # a node is terminal if there are no more moves to make
         winner = game.check_winner()
         if depth == 0 or winner != -1 or is_terminal(node):
             value = self.evaluate(winner, pid, game)
+            tree.val = value
             return value
         if maximizing_player == pid:
             b_val = float('-inf')
@@ -145,7 +162,10 @@ class MinMaxPlayer(Player):
                 next_game._Game__move(child[0][0], child[0][1], pid%2)
                 # next_game.print()
                 p_moves = self.get_possible_moves(next_game, (maximizing_player+1)%2)
-                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2)
+                treechild = TreeNode('child')
+                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, treechild)
+                treechild.val = val
+                tree.add_child(treechild)
                 b_val = max(b_val, val)
                 alpha = max(alpha, b_val)
                 if beta <= alpha:
@@ -158,7 +178,10 @@ class MinMaxPlayer(Player):
                 next_game._Game__move(child[0][0], child[0][1], (pid+1)%2)
                 # next_game.print()
                 p_moves = self.get_possible_moves(next_game, (maximizing_player+1)%2)
-                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, pid)
+                treechild = TreeNode('child')
+                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, pid, treechild)
+                treechild.val = val
+                tree.add_child(treechild)
                 b_val = min(b_val, val)
                 beta = min(beta, b_val)
                 if beta <= alpha:
@@ -230,15 +253,31 @@ class MinMaxPlayer(Player):
         max_p1 = max_inline_pieces(pid, game)
         max_p2 = max_inline_pieces((pid+1)%2, game)
         depth = min(abs(max_p1 - max_p2) + 1, max_p2)
-        # print(f"depth: {depth}")
-        
+        TreeNode.node_count = 0
+        tree = TreeNode('root')
+
         for child in possible_moves:
             next_game = deepcopy(game)
             next_game._Game__move(child[0][0], child[0][1], pid%2)
             p_moves = self.get_possible_moves(next_game, (pid+1)%2)
-            val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (pid+1)%2, pid)
+            treechild = TreeNode('child')
+            val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (pid+1)%2, pid, treechild)
+            treechild.val = val
+            tree.add_child(treechild)
             if val > b_val:
+                tree.val = f"root {val}"
                 b_val = val
                 from_pos = child[0][0]
                 move = child[0][1]
+
+        if self.plot_trees:
+            print(f"depth: {depth}")
+            graph = nx.Graph()
+            tree.add_to_graph(graph)
+            # pos = nx.planar_layout(graph)  # You can try other layout functions like circular_layout
+            pos = graphviz_layout(graph, prog="twopi")
+            plt.figure(figsize=(12, 8))
+            nx.draw(graph, pos, with_labels=True, font_weight='bold')
+            plt.show()
+            print("best value : ", b_val)
         return from_pos, move
