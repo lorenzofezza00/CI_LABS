@@ -32,29 +32,25 @@ def is_terminal(node) -> bool:
         return False
 
 class TreeNode:
-    node_count = 0  # Class-level variable to count nodes with the same value
+    node_count = 0
 
-    def __init__(self, val):
+    def __init__(self, val,  player_id=None):
         self.val = val
+        self.player_id = player_id
         self.index = TreeNode.node_count
         TreeNode.node_count += 1
         self.child = []
 
     def add_to_graph(self, graph, parent_name=None, parent_node=None):
-        node_name = f"{str(self.val)}_{self.index}"  # Add index to node name
-        graph.add_node(node_name)
+        node_name = str(self.index)
+        node_color = 'lightgreen' if self.player_id == 0 else 'lightcoral'
+        graph.add_node(node_name, color=node_color, value=str(self.val))
 
         if parent_name:
             graph.add_edge(parent_name, node_name)
 
         for child in self.child:
             child.add_to_graph(graph, node_name, self)
-
-    def print_tree(self, depth=0):
-        indent = "  " * depth
-        print(f"{indent}Value: {self.val}")
-        for child in self.child:
-            child.print_tree(depth + 1)
 
     def add_child(self, child):
         self.child.append(child)
@@ -162,7 +158,7 @@ class MinMaxPlayer(Player):
                 next_game._Game__move(child[0][0], child[0][1], pid%2)
                 # next_game.print()
                 p_moves = self.get_possible_moves(next_game, (maximizing_player+1)%2)
-                treechild = TreeNode('child')
+                treechild = TreeNode('child', (maximizing_player+1)%2)
                 val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, treechild)
                 treechild.val = val
                 tree.add_child(treechild)
@@ -178,7 +174,7 @@ class MinMaxPlayer(Player):
                 next_game._Game__move(child[0][0], child[0][1], (pid+1)%2)
                 # next_game.print()
                 p_moves = self.get_possible_moves(next_game, (maximizing_player+1)%2)
-                treechild = TreeNode('child')
+                treechild = TreeNode('child', (maximizing_player+1)%2)
                 val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, pid, treechild)
                 treechild.val = val
                 tree.add_child(treechild)
@@ -254,18 +250,18 @@ class MinMaxPlayer(Player):
         max_p2 = max_inline_pieces((pid+1)%2, game)
         depth = min(abs(max_p1 - max_p2) + 1, max_p2)
         TreeNode.node_count = 0
-        tree = TreeNode('root')
+        tree = TreeNode('root', pid%2)
 
         for child in possible_moves:
             next_game = deepcopy(game)
             next_game._Game__move(child[0][0], child[0][1], pid%2)
             p_moves = self.get_possible_moves(next_game, (pid+1)%2)
-            treechild = TreeNode('child')
+            treechild = TreeNode('child', (pid+1)%2)
             val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (pid+1)%2, pid, treechild)
             treechild.val = val
             tree.add_child(treechild)
             if val > b_val:
-                tree.val = f"root {val}"
+                tree.val = val
                 b_val = val
                 from_pos = child[0][0]
                 move = child[0][1]
@@ -274,10 +270,16 @@ class MinMaxPlayer(Player):
             print(f"depth: {depth}")
             graph = nx.Graph()
             tree.add_to_graph(graph)
-            # pos = nx.planar_layout(graph)  # You can try other layout functions like circular_layout
-            pos = graphviz_layout(graph, prog="twopi")
+            # colors is a sequence
+            colors = [graph.nodes[n]['color'] for n in graph.nodes]
+            # labels is a dictionary
+            labels = nx.get_node_attributes(graph, 'value')
+
+            pos = graphviz_layout(graph, prog="dot")
+            # pos = graphviz_layout(graph, prog="twopi")
             plt.figure(figsize=(12, 8))
-            nx.draw(graph, pos, with_labels=True, font_weight='bold')
+            nx.draw_networkx_labels(graph, pos, labels=labels, font_size=10, font_color="black")
+            nx.draw(graph, pos, node_color=colors)
             plt.show()
             print("best value : ", b_val)
         return from_pos, move
