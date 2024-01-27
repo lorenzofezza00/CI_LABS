@@ -17,6 +17,16 @@ def is_losing(player_id, len, game: 'Game') -> bool:
         if sum(game._board[::-1].diagonal() == (player_id+1)%2) >= len:
             return True
         
+def evaluate(winner, pid, game : 'Game') -> float:
+        if winner == pid%2:
+            return float('inf')
+        elif winner == (pid+1)%2:
+            return float('-inf')
+        else:
+            max_p1 = max_inline_pieces(pid, game)
+            max_p2 = max_inline_pieces((pid+1)%2, game)
+            return max_p1 - max_p2
+        
 def max_inline_pieces(maximizing_player, game: 'Game') -> int:
     cnt = 0
     for i in range(game._board.shape[0]):
@@ -60,7 +70,7 @@ class MinMaxPlayer(Player):
         super().__init__()
         self.plot_trees = plot_trees
     
-    # evaluate the board
+    # evaluate the board (old versions)
     
     '''def evaluate(self, game: 'Game') -> float:
         if game.check_winner() == self.player_id:
@@ -75,17 +85,6 @@ class MinMaxPlayer(Player):
         if is_losing((self.player_id+1)%2, game):
             return 1
         return 0'''
-    
-    def evaluate(self, winner, pid, game : 'Game') -> float:
-        if winner == pid%2:
-            return float('inf')
-        elif winner == (pid+1)%2:
-            return float('-inf')
-        else:
-            max_p1 = max_inline_pieces(pid, game)
-            max_p2 = max_inline_pieces((pid+1)%2, game)
-            return max_p1 - max_p2
-        
         
     def get_possible_moves(self, game: 'Game', player) -> list[tuple[tuple[int, int], Move]]:
         possible_moves = []
@@ -148,7 +147,7 @@ class MinMaxPlayer(Player):
         # a node is terminal if there are no more moves to make
         winner = game.check_winner()
         if depth == 0 or winner != -1 or is_terminal(node):
-            value = self.evaluate(winner, pid, game)
+            value = evaluate(winner, pid, game)
             tree.val = value
             return value
         if maximizing_player == pid:
@@ -266,7 +265,7 @@ class MinMaxPlayer(Player):
                 from_pos = child[0][0]
                 move = child[0][1]
 
-        if self.plot_trees:
+        if self.plot_trees and max_p1 >= 3 or max_p2 >= 3:
             print(f"depth: {depth}")
             graph = nx.Graph()
             tree.add_to_graph(graph)
@@ -275,8 +274,8 @@ class MinMaxPlayer(Player):
             # labels is a dictionary
             labels = nx.get_node_attributes(graph, 'value')
 
-            pos = graphviz_layout(graph, prog="dot")
-            # pos = graphviz_layout(graph, prog="twopi")
+            # pos = graphviz_layout(graph, prog="dot")
+            pos = graphviz_layout(graph, prog="twopi")
             plt.figure(figsize=(12, 8))
             nx.draw_networkx_labels(graph, pos, labels=labels, font_size=10, font_color="black")
             nx.draw(graph, pos, node_color=colors)
