@@ -265,7 +265,7 @@ class MinMaxPlayer(Player):
                 from_pos = child[0][0]
                 move = child[0][1]
 
-        if self.plot_trees and max_p1 >= 3 or max_p2 >= 3:
+        if self.plot_trees and (max_p1 >= 3 or max_p2 >= 3):
             print(f"depth: {depth}")
             graph = nx.Graph()
             tree.add_to_graph(graph)
