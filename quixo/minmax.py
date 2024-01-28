@@ -66,25 +66,29 @@ class TreeNode:
         self.child.append(child)
 
 class MinMaxPlayer(Player):
-    def __init__(self, plot_trees=False) -> None:
+    def __init__(self, plot_trees=True) -> None:
         super().__init__()
         self.plot_trees = plot_trees
     
     # evaluate the board (old versions)
     
-    '''def evaluate(self, game: 'Game') -> float:
+    '''
+    def evaluate(self, game: 'Game') -> float:
         if game.check_winner() == self.player_id:
             return 1
         elif game.check_winner() == (self.player_id+1)%2:
             return float('-inf')
         else:
-            return 0'''
+            return 0
+    '''
     
-    '''if is_losing(self.player_id%2, game):
+    '''
+    if is_losing(self.player_id%2, game):
             return -1
         if is_losing((self.player_id+1)%2, game):
             return 1
-        return 0'''
+        return 0
+    '''
         
     def get_possible_moves(self, game: 'Game', player) -> list[tuple[tuple[int, int], Move]]:
         possible_moves = []
@@ -158,7 +162,7 @@ class MinMaxPlayer(Player):
                 # next_game.print()
                 p_moves = self.get_possible_moves(next_game, (maximizing_player+1)%2)
                 treechild = TreeNode('child', (maximizing_player+1)%2)
-                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, treechild)
+                val = self.minmax(p_moves, depth - 1, next_game, alpha, beta, (maximizing_player+1)%2, pid, treechild)
                 treechild.val = val
                 tree.add_child(treechild)
                 b_val = max(b_val, val)
@@ -187,25 +191,31 @@ class MinMaxPlayer(Player):
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:
         pid = game.get_current_player()
         possible_moves = self.get_possible_moves(game, pid%2)
-        # initial
-        '''if len(possible_moves) > 20:
+        # initials
+
+        '''
+        if len(possible_moves) > 20:
             depth = 3
         else:
-            depth = 6'''
+            depth = 6
+        '''
         
-        '''# if I am losing because the opponent has len symbols in line, I will search deeper to find the best move to avoid losing
+        '''
+        # if I am losing because the opponent has len symbols in line, I will search deeper to find the best move to avoid losing
         depth = 1
-        if is_losing(self.player_id, 3, game):
+        if is_losing(pid, 3, game):
             depth = 4
         # if I am winning because I have len symbols in line, I will search less to find the best move to win
-        elif is_losing((self.player_id+1)%2, 3, game):
-            depth = 3'''
-        
-        '''if is_losing(self.player_id, game) or is_losing((self.player_id+1)%2, game):
+        elif is_losing((pid+1)%2, 3, game):
             depth = 3
-        # if I am far from winning or losing, I don't need to search
+        '''
+        
+        '''
+        if is_losing(pid, 3, game) or is_losing((pid+1)%2, 3, game):
+            depth = 3
         else:
-            depth = 1'''
+            depth = 1       # if I am far from winning or losing, I don't need to search
+        '''
 
         alpha = float('-inf')
         beta = float('inf')
@@ -222,21 +232,17 @@ class MinMaxPlayer(Player):
             return possible_moves[0][0]
         else:
             from_pos, move = possible_moves[0][0]
-        '''if depth != 1:
-            if self.tree is None:
-                self.tree = TreeNode(game._board, None)
-            else:
-                self.tree = self.tree.search(game._board)'''
         
         # if someone is losign depth variation
-        '''if is_losing(self.player_id, 3, game) or is_losing((self.player_id+1)%2, 3, game):
-            max_p1 = max_inline_pieces(self.player_id, game)
-            max_p2 = max_inline_pieces((self.player_id+1)%2, game)
-            # depth = min(abs(max_p1 - max_p2) + 3, 4)
-            depth = abs(max_p1 - max_p2) + 1
-            print(f"depth: {depth}")
+        ''' 
+        max_p1 = max_inline_pieces(pid, game)
+        max_p2 = max_inline_pieces((pid+1)%2, game)
+        if is_losing(pid, 3, game) or is_losing((pid+1)%2, 3, game):
+            depth = min(abs(max_p1 - max_p2) + 3, 4)
+            # depth = abs(max_p1 - max_p2) + 1
         else:
-            depth = 1'''
+            depth = 1
+        '''
         
         #actual
 
