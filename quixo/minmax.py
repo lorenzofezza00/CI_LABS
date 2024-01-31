@@ -66,7 +66,7 @@ class TreeNode:
         self.child.append(child)
 
 class MinMaxPlayer(Player):
-    def __init__(self, plot_trees=True) -> None:
+    def __init__(self, plot_trees=False) -> None:
         super().__init__()
         self.plot_trees = plot_trees
     
